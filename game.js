@@ -1,9 +1,16 @@
 var buttonColors = ["red", "blue", "green", "yellow"];
+
 var gamePattern = [];
 var userClickedPattern = [];
-var level = 0;
 
+var level = 0;
 var start = false;
+
+function startOver() {
+  level = 0;
+  gamePattern = [];
+  start = false;
+}
 
 function playSound(sound) {
   var sound = new Audio(`/SimonGame/sounds/${sound}.mp3`);
@@ -19,11 +26,38 @@ function animatePress(currentColor) {
   }, 100);
 }
 
-function checkAnswer(currentLevel) {}
+function checkAnswer(currentLevel) {
+  console.log(currentLevel);
+  console.log(gamePattern);
+  console.log(userClickedPattern);
+  console.log(level);
+
+  if (gamePattern[currentLevel] == userClickedPattern[currentLevel]) {
+    if (currentLevel === level - 1) {
+      setTimeout(nextSequence, 1000);
+    }
+  } else {
+    var wrongSound = new Audio("/SimonGame/sounds/wrong.mp3");
+    wrongSound.play();
+
+    $("#level-title").text(`Game Over, Press Any Key To Restart`);
+
+    var body = $("body");
+    body.addClass("game-over");
+
+    setTimeout(function () {
+      body.removeClass("game-over");
+    }, 200);
+
+    startOver();
+  }
+}
 
 function nextSequence() {
-  $("#level-title").text(`Level ${level}`);
+  userClickedPattern = [];
+
   level++;
+  $("#level-title").text(`Level ${level}`);
 
   var randomNumber = Math.floor(Math.random() * 4);
 
@@ -38,17 +72,18 @@ function nextSequence() {
 
 $(".btn").on("click", function () {
   var clickedButton = $(this);
-  var clickedButtonID = clickedButton.attr("id");
-
-  var userChosenColour = clickedButtonID;
+  var userChosenColour = clickedButton.attr("id");
   userClickedPattern.push(userChosenColour);
 
-  playSound(clickedButtonID);
-  animatePress(clickedButtonID);
+  playSound(userChosenColour);
+  animatePress(userChosenColour);
+
+  checkAnswer(userClickedPattern.length - 1);
 });
 
 $(document).on("keydown", function () {
   if (!start) {
+    $("#level-title").text(`Level ${level}`);
     start = true;
     nextSequence();
   }
